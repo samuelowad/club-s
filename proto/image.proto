@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+service ImageService {
+  rpc ProcessImage (ImageRequest) returns (ImageResponse);
+}
+
+message ImageRequest {
+  int32 id = 1;
+  string path = 2;
+}
+
+message ImageResponse {
+  bool explicit = 1;
+  string imageText = 2;
+  int32 id = 3;
+}

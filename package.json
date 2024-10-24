@@ -1,0 +1,17 @@
+{
+  "name": "sexual-de",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "nsfwjs": "^4.2.0",
+    "tesseract.js": "^5.1.1"
+  }
+}

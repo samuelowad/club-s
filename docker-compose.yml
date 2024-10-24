@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  main-service:
+    build: ./main-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/usr/src/app/uploads  # Shared volume for uploads
+      - ./proto:/usr/src/app/proto      # Shared proto files
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=images_db
+    depends_on:
+      - postgres
+      - image-scanner
+
+  image-scanner:
+    build: ./image-scanner
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./uploads:/usr/src/app/uploads  # Shared volume for uploads
+      - ./proto:/usr/src/app/proto      # Shared proto files
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: images_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
