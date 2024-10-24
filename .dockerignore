@@ -1,0 +1,29 @@
+# Ignore node_modules directory
+node_modules
+
+# Ignore any log files
+*.log
+
+# Ignore local environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignore directories and files related to tests
+__tests__/
+coverage/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Ignore any build artifacts or temporary files
+dist/
+tmp/
+*.swp
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

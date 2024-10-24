@@ -12,18 +12,14 @@ async function loadModel() {
 
 async function classifyImage(imagePath) {
   try {
-    // Asynchronously read the image file
     const pic = await fs.readFile(imagePath);
 
-    // Decode the image and optionally resize it to improve performance
     const image = await tf.node.decodeImage(new Uint8Array(pic), 3);
-    
-    // Optionally resize the image to reduce processing time
+
     const resizedImage = tf.image.resizeBilinear(image, [224, 224]); // Example: resizing to 224x224
 
     const predictions = await model.classify(resizedImage);
-    
-    // Dispose tensors to free memory
+
     image.dispose();
     resizedImage.dispose();
 
