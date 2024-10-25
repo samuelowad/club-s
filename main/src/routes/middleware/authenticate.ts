@@ -10,7 +10,7 @@ export const authenticate = (req: ExtendedRequest, res: Response, next: NextFunc
   const token = req.headers['authorization']?.split(' ')[1];
 
   if (!token) {
-    return unauthorizedResponse(res);
+    return unauthorizedResponse(res, 'Token is required', 401);
   }
 
   try {
@@ -19,20 +19,20 @@ export const authenticate = (req: ExtendedRequest, res: Response, next: NextFunc
     req.role = role;
     next();
   } catch (error) {
-    return unauthorizedResponse(res);
+    return unauthorizedResponse(res, 'Invalid token', 401);
   }
 };
 
 export const adminAuthenticate = (req: ExtendedRequest, res: Response, next: NextFunction) :void => {
-  // if (req.role !== UserRole.ADMIN) {
-  //   return unauthorizedResponse(res);
-  // }
+  if (req.role !== UserRole.ADMIN) {
+    return unauthorizedResponse(res, 'Admin access required', 401);
+  }
   next();
 }
 
 export const customerAuthenticate = async (req: ExtendedRequest, res: Response, next: NextFunction) :Promise<void> => {
     if (req.role !== UserRole.CUSTOMER) {
-      return unauthorizedResponse(res);
+      return unauthorizedResponse(res, 'Customer access required', 401);
     }
 
     next();
@@ -43,4 +43,6 @@ export const attachUser = async (req: ExtendedRequest, res: Response, next: Next
   if(!user) return notFoundResponse(res, 'User not found');
 
   req.user = user;
+
+  next()
 }

@@ -21,14 +21,6 @@ class SeatService {
     return await this.seatRepository.save(newSeats);
   }
 
-    async getSeats() {
-      return await this.seatRepository.find();
-    }
-
-    getSeatBySeatNumber(seatNumber: string) {
-      return this.seatRepository.findOne( {where: { seatNumber}});
-    }
-
     async update( seats: Seat[]) {
       await this.seatRepository.save(seats);
     }

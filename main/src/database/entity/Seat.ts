@@ -17,5 +17,5 @@ export class Seat {
   event: Event;
 
   @ManyToOne(() => Ticket, (ticket) => ticket.seats, { nullable: true })
-  ticket: Ticket;
+  ticket?: Ticket | null;
 }

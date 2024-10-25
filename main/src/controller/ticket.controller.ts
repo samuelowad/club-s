@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import eventService from '../services/event.service';
 import {
   errorResponse,
@@ -10,36 +10,64 @@ import { ExtendedRequest } from '../interface';
 import TicketService from '../services/ticket.service';
 import { User } from '../database/entity/User';
 import SeatService from '../services/seat.service';
+import { TicketStatusEnum } from '../enum/ticketStatus.enum';
+import { AppDataSource } from '../database';
 
 export const bookTicket = async (req: ExtendedRequest, res: Response) => {
+  const queryRunner = AppDataSource.createQueryRunner();
   try {
     const {eventId, seats, numberOfTickets} = req.body;
+
+    await queryRunner.startTransaction();
 
     const event = await eventService.getById(eventId, 'seats');
     if (!event) return notFoundResponse(res, 'Event not found');
 
     event.availableTickets -= numberOfTickets;
+    if (event.availableTickets < 0 || event.availableTickets < numberOfTickets) {
+      return validationErrorResponse(res, 'No available tickets');
+    }
 
-    const seatsAvailable = event.seats.filter(seat => seat.isAvailable);
-    if (seatsAvailable.length < numberOfTickets) return validationErrorResponse(res, `Only ${seatsAvailable.length} tickets available`);
+    let requestedSeats = event.seats.filter(seat => seat.isAvailable);
+    requestedSeats = requestedSeats.sort((a, b) => a.id - b.id);
 
-    const requestedSeats = seatsAvailable.filter(seat => seats.includes(seat.seatNumber));
-    if (requestedSeats.length < numberOfTickets) return validationErrorResponse(res, 'Requested seats are not available');
+    if (seats && seats.length > 0) {
+      requestedSeats = requestedSeats.filter(seat => seats.includes(seat.seatNumber));
+      if (requestedSeats.length < numberOfTickets) {
+        return validationErrorResponse(res, `Requested seats are not available`);
+      }
+    } else {
+      if (requestedSeats.length < numberOfTickets) {
+        return validationErrorResponse(res, `Only ${requestedSeats.length} available seats remaining`);
+      }
+      requestedSeats = requestedSeats.slice(0, numberOfTickets);
+    }
 
-    const newTicket = await TicketService.createTicket(event, req.user as User, numberOfTickets);
+    if (requestedSeats.length < numberOfTickets) {
+      return validationErrorResponse(res, `Requested seats are not available`);
+    }
 
     requestedSeats.forEach(seat => {
       seat.isAvailable = false
       seat.ticket = newTicket
     });
 
-    await SeatService.update(requestedSeats);
-    await eventService.update(event);
+    const newTicket = await TicketService.createTicket(event, req.user as User, numberOfTickets);
 
+
+    await Promise.all([
+      await SeatService.update(requestedSeats),
+      await eventService.update(event)
+    ]);
+
+    await queryRunner.commitTransaction();
 
     return successResponse(res, {id: newTicket.id}, 'Ticket booked successfully', 201);
   } catch (e : any) {
+    await queryRunner.rollbackTransaction();
     return errorResponse(res, e);
+  } finally {
+    await queryRunner.release();
   }
 };
 
@@ -52,28 +80,29 @@ export const getUserTickets = async (req: ExtendedRequest, res: Response) => {
   }
 }
 
-export  const cancelTicket = async (req: ExtendedRequest, res: Response) => {
+export const cancelTicket = async (req: ExtendedRequest, res: Response) => {
     try {
-        const ticketId = req.params.id;
-        const [ticket] = await TicketService.getByParam({ id: ticketId, user: { id: req.userId } }, ['seats', 'event']);
-        if (!ticket) return notFoundResponse(res, 'Ticket not found');
+      const ticketId = req.params.id;
+      const [ticket] = await TicketService.getByParam({ id: ticketId, user: { id: req.userId } }, ['seats', 'event']);
+      if (!ticket) return notFoundResponse(res, 'Ticket not found');
+      ticket.status = TicketStatusEnum.CANCELLED
 
-        const event = await eventService.getById(ticket.event.id, 'seats');
-        if (!event) return notFoundResponse(res, 'Event not found');
+      const event = await eventService.getById(ticket.event.id, 'seats');
+      if (!event) return notFoundResponse(res, 'Event not found');
 
-        event.availableTickets += ticket.quantity;
-        await eventService.update(event);
+      event.availableTickets += ticket.quantity;
+      await eventService.update(event);
 
-        const seats = ticket.seats;
-        seats.forEach(seat => {
+      const seats = ticket.seats;
+      seats.forEach(seat => {
         seat.isAvailable = true;
         seat.ticket = null;
-        });
+      });
 
-        await SeatService.update(seats);
-        // await TicketService.delete(ticketId);
+      await SeatService.update(seats);
+      await TicketService.updateTicket( ticket);
 
-        return successResponse(res, {}, 'Ticket cancelled successfully');
+      return successResponse(res, {}, 'Ticket cancelled successfully');
     } catch (e : any) {
         return errorResponse(res, e);
     }
