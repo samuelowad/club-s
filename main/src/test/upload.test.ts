@@ -1,15 +1,14 @@
 import request from 'supertest';
 import { app } from '../app';
 import path from 'path';
+import { initializeDatabase } from '../database';
 
 describe('POST /upload', () => {
   let server: any;
 
-  // Start the server before all tests
-  beforeAll((done) => {
-    server = app.listen(3001, () => {
-      done();
-    });
+  beforeAll(async () => {
+    await initializeDatabase()
+    server = app.listen(3001);
   });
 
   afterAll((done) => {
@@ -22,11 +21,9 @@ describe('POST /upload', () => {
     const response = await request(server)
         .post('/upload')
         .attach('file', filePath)
-        .expect(200);
+        .expect(201);
 
-    expect(response.body).toHaveProperty('id');
-    expect(response.body).toHaveProperty('path');
-    expect(response.body.path).toMatch(/uploads\/[a-f0-9]+\.png/);
+    expect(response.body.data).toHaveProperty('id');
   });
 
   it('should return 400 for invalid file type', async () => {

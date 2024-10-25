@@ -13,6 +13,9 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.12.2",
     "@grpc/proto-loader": "^0.7.13",
-    "@protobuf-ts/plugin": "^2.9.4"
+    "@protobuf-ts/plugin": "^2.9.4",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "nsfwjs": "^4.2.0",
+    "tesseract.js": "^5.1.1"
   }
 }
