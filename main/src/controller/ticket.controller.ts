@@ -47,12 +47,12 @@ export const bookTicket = async (req: ExtendedRequest, res: Response) => {
       return validationErrorResponse(res, `Requested seats are not available`);
     }
 
+
+    const newTicket = await TicketService.createTicket(event, req.user as User, numberOfTickets, requestedSeats);
     requestedSeats.forEach(seat => {
       seat.isAvailable = false
       seat.ticket = newTicket
     });
-
-    const newTicket = await TicketService.createTicket(event, req.user as User, numberOfTickets);
 
 
     await Promise.all([

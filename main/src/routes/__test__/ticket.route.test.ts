@@ -16,6 +16,8 @@ app.use('/auth', authRoutes);
 app.use('/event', eventRoutes);
 app.use(routes);
 
+jest.mock('../../services/rabbitMq.service');
+
 let authToken: string;
 let adminAuthToken: string;
 let eventId: number;

@@ -53,7 +53,7 @@ describe('RabbitMQService', () => {
   });
 
   it('should close the RabbitMQ connection', async () => {
-    await RabbitMQService.init(); // Initialize to ensure the connection is open
+    await RabbitMQService.init();
 
     await RabbitMQService.close();
 

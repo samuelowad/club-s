@@ -8,19 +8,19 @@ import RabbitMQService from './rabbitMq.service';
 class TicketService {
   private ticketRepository = AppDataSource.getRepository(Ticket);
 
-    public async createTicket(event: Event, user:User, quantity: number) {
+    public async createTicket(event: Event, user:User, quantity: number, seats: Seat[]): Promise<Ticket> {
       try{
         let newTicket = this.ticketRepository.create({event, user, quantity});
         newTicket = await this.ticketRepository.save(newTicket);
 
-        // const message = {
-        //   email: user.email,
-        //   eventName: event.name,
-        //   ticketId: newTicket.id,
-        //   seatNumbers: seats.map(seat => seat.seatNumber),
-        // };
+        const message = {
+          email: user.email,
+          eventName: event.name,
+          ticketId: newTicket.id,
+          seatNumbers: seats.map(seat => seat.seatNumber),
+        };
 
-        // await RabbitMQService.fanOut(message);
+        await RabbitMQService.fanOut(message);
         return newTicket;
       } catch (error) {
         console.error('Error during ticket creation:', error);

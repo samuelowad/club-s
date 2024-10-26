@@ -18,7 +18,7 @@ services:
       - image-scanner
 
   image-scanner:
-    build: ./image-scanner
+    build: mailer
     ports:
       - "50051:50051"
     volumes:
