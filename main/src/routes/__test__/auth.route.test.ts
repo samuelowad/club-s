@@ -2,11 +2,10 @@
 import request from 'supertest';
 import express from 'express';
 import authRoutes from '../auth.route';
-import { errorResponse } from '../../utils/responseHandler.util';
 import { initializeDatabase } from '../../database';
 
 const app = express();
-app.use(express.json()); // Middleware to parse JSON
+app.use(express.json());
 app.use('/auth', authRoutes);
 
 beforeAll(async () => {
@@ -65,7 +64,7 @@ describe('Auth Routes', () => {
     it('should return 200 for successful login', async () => {
       const response = await request(app)
           .post('/auth/login')
-          .send({ email: 'test@example.com', password: 'Password123' });
+          .send({ email: 'test123@test.com', password: 'testPass1' });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'Login successful');

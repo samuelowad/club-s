@@ -20,7 +20,6 @@ jest.mock('pg', () => {
   };
 });
 
-// Mock typeorm DataSource
 jest.mock('typeorm', () => {
   const actual = jest.requireActual('typeorm');
   return {
@@ -119,7 +118,7 @@ describe('Database Initialization', () => {
 
     it('should handle database name with special characters', async () => {
       const testConfig = { ...config };
-      testConfig.POSTGRES_DB = 'mailer_db';
+      testConfig.POSTGRES_DB = 'appdb_mailer';
 
       const checkDbResult: QueryResult = {
         rows: [],

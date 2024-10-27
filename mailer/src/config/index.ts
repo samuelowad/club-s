@@ -11,7 +11,7 @@ export default {
   SERVER_PORT: process.env.SERVER_PORT || 3000,
   RABBITMQ_HOST: process.env.RABBITMQ_HOST || 'localhost',
   RABBITMQ_PORT: process.env.RABBITMQ_PORT || 5672,
-  RABBITMQ_USER: process.env.RABBIT || 'user',
+  RABBITMQ_USER: process.env.RABBITMQ_USER || 'guest',
   RABBITMQ_PASSWORD: process.env.RABBITMQ_PASSWORD || 'password',
 };
 

@@ -101,7 +101,6 @@ AgMBAAE=
 
       const token = jwtUtil.sign('test@example.com', 1, UserRole.CUSTOMER);
 
-      // Advance time by 3 hours (beyond the 2-hour expiration)
       jest.advanceTimersByTime(3 * 60 * 60 * 1000);
 
       expect(() => {

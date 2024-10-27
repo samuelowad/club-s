@@ -9,5 +9,6 @@ const router = Router();
 
 router.post('/', authenticate, adminAuthenticate, validateRequest([eventValidationRules]), eventController.createEvent);
 router.get('/', eventController.getEvents);
+router.get('/:id', eventController.getEvent);
 
 export  default router;

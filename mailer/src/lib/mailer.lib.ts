@@ -29,7 +29,6 @@ export async function sendEmail(email: Email, retries = 3) {
     } else {
       email.status = EmailStatus.FAILED;
       logger.error(`Failed to send email to ${email.email} after multiple attempts.`);
-      throw new Error(`Email send failed: ${error}`);
     }
   }
 }

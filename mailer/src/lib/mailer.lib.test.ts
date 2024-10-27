@@ -53,7 +53,6 @@ describe("sendEmail Functionality", () => {
     };
     emailWithoutEventName.body = generateBookingConfirmationEmail(emailWithoutEventName);
 
-    // Send email and ensure it's accepted
     const sentMail = await sendEmail(emailWithoutEventName);
     expect(sentMail).toBeTruthy();
     expect(sentMail.accepted).toContain(emailWithoutEventName.email);
@@ -67,15 +66,15 @@ describe("sendEmail Functionality", () => {
       email: "invalid-email"
     };
     invalidEmail.body = generateBookingConfirmationEmail(invalidEmail);
-
-    await expect(sendEmail(invalidEmail)).rejects.toThrow(/Email send failed/);
+    await sendEmail(invalidEmail)
+    expect(invalidEmail.status).toBe(EmailStatus.FAILED);
   });
 
 
   it("should throw an error for an invalid email address", async () => {
     const invalidEmail: Email = {
       id: 1,
-      email: "invalid-email",  // Invalid email format
+      email: "invalid-email",
       subject: "Invalid Email Test",
       body: "This should fail due to invalid email format.",
       status: EmailStatus.PENDING,
@@ -84,11 +83,11 @@ describe("sendEmail Functionality", () => {
       seatNumbers: ["A1", "A2"]
     };
     invalidEmail.body = generateBookingConfirmationEmail(invalidEmail);
-
-    await expect(sendEmail(invalidEmail)).rejects.toThrow(/Email send failed/);
+    await sendEmail(invalidEmail)
+    expect(invalidEmail.status).toBe(EmailStatus.FAILED);
   });
 
-  it("should throw an error when email is missing a recipient address", async () => {
+  it("should fail when email is missing a recipient address", async () => {
     const noRecipientEmail: Email = {
       id: 2,
       email: "",
@@ -101,7 +100,8 @@ describe("sendEmail Functionality", () => {
     };
     noRecipientEmail.body = generateBookingConfirmationEmail(noRecipientEmail);
 
-    await expect(sendEmail(noRecipientEmail)).rejects.toThrow(/Email send failed/);
+    await sendEmail(noRecipientEmail)
     expect(noRecipientEmail.status).toBe(EmailStatus.FAILED);
+
   });
 });

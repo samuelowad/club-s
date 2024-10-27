@@ -9,10 +9,10 @@ class RabbitMQService {
   public async init() {
     try {
       this.connection = await amqp.connect({
-        hostname: config.RABBITMQ_HOST || 'localhost',
-        port: Number(config.RABBITMQ_PORT) || 5672,
-        username: config.RABBITMQ_USER || 'guest',
-        password: config.RABBITMQ_PASSWORD || 'guest',
+        hostname: config.RABBITMQ_HOST ,
+        port: Number(config.RABBITMQ_PORT) ,
+        username: config.RABBITMQ_USER ,
+        password: config.RABBITMQ_PASSWORD,
       });
       this.channel = await this.connection.createChannel();
       console.log('RabbitMQ connected');

@@ -2,12 +2,16 @@ import { AppDataSource } from '../database';
 import { Email } from '../database/entity/Email';
 import { EmailData } from '../interface';
 import { EmailStatus } from '../enum';
+import { generateBookingConfirmationEmail } from '../utils/email.util';
 
 class EmailService {
   private emailRepository = AppDataSource.getRepository(Email);
 
   public createEmail(email: EmailData): Promise<Email> {
     try {
+      email.subject = email.subject || 'Booking confirmation';
+      email.body = generateBookingConfirmationEmail(email);
+
       const newEmail = this.emailRepository.create(email);
       return this.emailRepository.save(newEmail);
     } catch (error) {
@@ -29,6 +33,7 @@ class EmailService {
   }
 
   public update(email: Email) {
+    console.log('Updating email:', email);
     try {
       return this.emailRepository.save(email);
     }catch (error) {

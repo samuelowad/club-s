@@ -8,7 +8,7 @@ export class Seat {
   id: number;
 
   @Column()
-  seatNumber: string; // e.g., "A1", "B2"
+  seatNumber: string;
 
   @Column()
   isAvailable: boolean;

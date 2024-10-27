@@ -1,10 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import * as http from 'http';
+import client from 'prom-client';
 import { initializeDatabase, AppDataSource } from './database';
 import routes from './routes/index.routes';
 import { errorHandler } from './routes/middleware';
 import { logger } from './utils/logger';
-import * as http from 'http';
+import RabbitMQService  from './services/rabbitMq.service';
 
 export const app = express();
 let server: http.Server;
@@ -17,13 +19,19 @@ app.use(routes);
 app.use(logger);
 app.use(errorHandler);
 
+client.collectDefaultMetrics();
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 const shutdownGracefully = async (signal: string) => {
   console.log(`\n${signal} received. Starting graceful shutdown...`);
 
   const forceShutdown = setTimeout(() => {
     console.error('Force shutting down due to timeout...');
     process.exit(1);
-  }, 30000); // 30 seconds timeout
+  }, 30000);
 
   try {
     if (server) {
@@ -66,6 +74,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const startServer = async () => {
   try {
     await initializeDatabase();
+    await RabbitMQService.init();
 
     const PORT = process.env.PORT || 3000;
     server = app.listen(PORT, () => {

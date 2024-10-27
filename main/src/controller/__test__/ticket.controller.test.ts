@@ -73,7 +73,6 @@ describe('Ticket Controller', () => {
       await bookTicket(req as ExtendedRequest, res as Response);
 
       expect(eventService.getById).toHaveBeenCalledWith(req.body.eventId, 'seats');
-      // expect(TicketService.createTicket).toHaveBeenCalledWith(mockEvent, req.user, req.body.numberOfTickets);
       expect(SeatService.update).toHaveBeenCalledWith(mockEvent.seats);
       expect(successResponse).toHaveBeenCalledWith(res, { id: 'ticketId' }, 'Ticket booked successfully', 201);
     });
@@ -105,7 +104,7 @@ describe('Ticket Controller', () => {
     });
 
     it('should return error if booking fails', async () => {
-      (eventService.getById as jest.Mock).mockResolvedValue(null); // Event not found
+      (eventService.getById as jest.Mock).mockResolvedValue(null);
 
       await bookTicket(req as ExtendedRequest, res as Response);
 

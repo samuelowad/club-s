@@ -30,10 +30,10 @@ describe('RabbitMQService', () => {
     await RabbitMQService.init();
 
     expect(amqp.connect).toHaveBeenCalledWith({
-      hostname: 'localhost',
+      hostname: 'rabbitmq',
       port: 5672,
-      username: 'user',
-      password: 'password',
+      username: 'guest',
+      password: 'guest',
     });
     expect(mockConnection.createChannel).toHaveBeenCalled();
     expect(mockChannel.assertQueue).toHaveBeenCalledWith('email_notifications', { durable: true });

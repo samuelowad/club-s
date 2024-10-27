@@ -167,7 +167,7 @@ describe('Ticket Routes', () => {
           .send({
             eventId: eventId,
             numberOfTickets: 2,
-            seats: 'not an array', // Invalid seats format
+            seats: 'not an array',
           });
 
       expect(response.status).toBe(400);
@@ -181,7 +181,7 @@ describe('Ticket Routes', () => {
           .send({
             eventId: eventId,
             numberOfTickets: 2,
-            seats: ['Seat 1', 2], // One seat is a number
+            seats: ['Seat 1', 2],
           });
 
       expect(response.status).toBe(400);
@@ -195,7 +195,7 @@ describe('Ticket Routes', () => {
           .send({
             eventId: eventId,
             numberOfTickets: 2,
-            seats: ['Seat 1', 'Seat 1'], // Duplicate seats
+            seats: ['Seat 1', 'Seat 1'],
           });
 
       expect(response.status).toBe(400);
@@ -208,8 +208,8 @@ describe('Ticket Routes', () => {
           .set('Authorization', `Bearer ${authToken}`)
           .send({
             eventId: eventId,
-            numberOfTickets: 1, // Only one ticket purchased
-            seats: ['Seat 1', 'Seat 2'], // More seats than tickets
+            numberOfTickets: 1,
+            seats: ['Seat 1', 'Seat 2'],
           });
 
       expect(response.status).toBe(400);
@@ -223,7 +223,7 @@ describe('Ticket Routes', () => {
           .send({
             eventId: eventId,
             numberOfTickets: 2,
-            seats: ['Seat 1', 'InvalidSeat'], // One seat has an invalid format
+            seats: ['Seat 1', 'InvalidSeat'],
           });
 
       expect(response.status).toBe(400);

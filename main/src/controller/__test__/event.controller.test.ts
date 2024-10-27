@@ -32,9 +32,9 @@ describe('Event Controller', () => {
 
   describe('createEvent', () => {
     it('should create an event successfully', async () => {
-      (EventService.getEventByName as jest.Mock).mockResolvedValue(null); // Event does not exist
-      (EventService.createEvent as jest.Mock).mockResolvedValue(req.body); // Simulate event creation
-      (SeatService.createSeat as jest.Mock).mockResolvedValue(null); // Simulate seat creation
+      (EventService.getEventByName as jest.Mock).mockResolvedValue(null);
+      (EventService.createEvent as jest.Mock).mockResolvedValue(req.body);
+      (SeatService.createSeat as jest.Mock).mockResolvedValue(null);
 
       await createEvent(req as ExtendedRequest, res as any);
 
@@ -45,7 +45,7 @@ describe('Event Controller', () => {
     });
 
     it('should return an error if event already exists', async () => {
-      (EventService.getEventByName as jest.Mock).mockResolvedValue(req.body); // Event already exists
+      (EventService.getEventByName as jest.Mock).mockResolvedValue(req.body);
 
       await createEvent(req as ExtendedRequest, res as any);
 
@@ -53,7 +53,7 @@ describe('Event Controller', () => {
     });
 
     it('should return an error if event creation fails', async () => {
-      (EventService.getEventByName as jest.Mock).mockResolvedValue(null); // Event does not exist
+      (EventService.getEventByName as jest.Mock).mockResolvedValue(null);
       (EventService.createEvent as jest.Mock).mockRejectedValue(new Error('Event creation failed'));
 
       await createEvent(req as ExtendedRequest, res as any);
@@ -65,7 +65,7 @@ describe('Event Controller', () => {
   describe('getEvents', () => {
     it('should retrieve events successfully', async () => {
       const events = [{ name: 'Concert' }, { name: 'Theater' }];
-      (EventService.getEvents as jest.Mock).mockResolvedValue(events); // Mocking event retrieval
+      (EventService.getEvents as jest.Mock).mockResolvedValue(events);
 
       await getEvents(req as any, res as any);
 

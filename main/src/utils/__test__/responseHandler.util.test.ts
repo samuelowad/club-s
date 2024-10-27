@@ -5,7 +5,7 @@ import {
   notFoundResponse,
   unauthorizedResponse,
   conflictResponse,
-} from '../responseHandler.util'; // Adjust the path accordingly
+} from '../responseHandler.util';
 
 describe('Response Handlers', () => {
   let res: any;

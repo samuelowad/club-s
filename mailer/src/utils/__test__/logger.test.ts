@@ -19,8 +19,9 @@ describe('Logger', () => {
 
   it('should log an error message with the correct format', () => {
     const message = 'This is an error message';
-    logger.error(message);
+    const error = new Error('This is an error');
+    logger.error(message, error);
 
-    expect(console.error).toHaveBeenCalledWith(`ERROR: ${message}`);
+    expect(console.error).toHaveBeenCalledWith(`ERROR: ${message}`, error);
   });
 });

@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'rabbitmq'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['rabbitmq:15672']
+
+  - job_name: 'main'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['main:3000']
+
+  - job_name: 'mailer'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['mailer:3001']
+
+  - job_name: 'nodejs-services'
+    static_configs:
+      - targets: ['main:3000', 'mailer:3001']
