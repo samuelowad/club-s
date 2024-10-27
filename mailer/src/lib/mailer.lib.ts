@@ -16,7 +16,7 @@ export async function sendEmail(email: Email, retries = 3) {
       from: mailConfig.auth.user,
       to: email.email,
       subject: email.subject,
-      text: email.body,
+      html: email.body,
     });
     logger.info(`Email successfully sent to ${email.email}`);
     email.status = EmailStatus.SENT;
