@@ -17,6 +17,9 @@ export default {
 
 export const mailConfig: MailConfig = {
   service: process.env.MAIL_SERVICE || "gmail",
+  host: process.env.MAIL_HOST || "smtp.gmail.com",
+  port: Number(process.env.MAIL_PORT) || 587,
+  secure: false,
   auth: {
     user: process.env.GMAIL_USER || "",
     pass: process.env.GMAIL_PASS || "",

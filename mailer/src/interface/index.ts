@@ -9,6 +9,9 @@ export interface EmailData {
 
 export interface MailConfig {
   service: string;
+  host: string;
+  port: number
+  secure: boolean
   auth: {
     user: string;
     pass: string;
