@@ -2,10 +2,11 @@ import { mailConfig } from '../config';
 import * as nodemailer from "nodemailer";
 import { logger } from '../utils/logger';
 import { Email } from '../database/entity/Email';
+import { EmailStatus } from '../enum';
 
 let  transporter: nodemailer.Transporter ;
 
-export async function sendEmail(email: Email) {
+export async function sendEmail(email: Email, retries = 3) {
   try {
     if (!transporter) {
       transporter = await mailerTransport();
@@ -18,18 +19,24 @@ export async function sendEmail(email: Email) {
       text: email.body,
     });
     logger.info(`Email successfully sent to ${email.email}`);
-
+    email.status = EmailStatus.SENT;
     return sentMail;
   } catch (error) {
-    logger.error(`Failed to send email to ${email.email}: ${error}`);
-    throw new Error(`Email send failed: ${error}`);
+    console.error(`Failed to send email to ${email.email}: ${error}`);
+    if (retries > 0) {
+     logger.info(`Retrying... attempts left: ${retries}`);
+      await sendEmail(email, retries - 1);
+    } else {
+      email.status = EmailStatus.FAILED;
+      logger.error(`Failed to send email to ${email.email} after multiple attempts.`);
+      throw new Error(`Email send failed: ${error}`);
+    }
   }
 }
 
 async function mailerTransport() {
   if(process.env.NODE_ENV === 'test') {
     const testAccount = await nodemailer.createTestAccount();
-    console.log('Test account:', testAccount);
     return nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,

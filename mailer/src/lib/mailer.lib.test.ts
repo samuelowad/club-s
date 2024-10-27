@@ -1,4 +1,4 @@
-import { sendEmail } from './email.lib';
+import { sendEmail } from './mailer.lib';
 import { Email } from '../database/entity/Email';
 import * as nodemailer from 'nodemailer';
 import { generateBookingConfirmationEmail } from '../utils/email.util';
@@ -27,6 +27,7 @@ describe("sendEmail Functionality", () => {
     const sentMail = await sendEmail(testEmail);
     expect(sentMail).toBeTruthy();
     expect(sentMail.accepted).toContain(testEmail.email);
+    expect(testEmail.status).toBe(EmailStatus.SENT);
 
     console.log(`Booking Confirmation Preview URL: ${nodemailer.getTestMessageUrl(sentMail)}`);
   });
@@ -68,5 +69,39 @@ describe("sendEmail Functionality", () => {
     invalidEmail.body = generateBookingConfirmationEmail(invalidEmail);
 
     await expect(sendEmail(invalidEmail)).rejects.toThrow(/Email send failed/);
+  });
+
+
+  it("should throw an error for an invalid email address", async () => {
+    const invalidEmail: Email = {
+      id: 1,
+      email: "invalid-email",  // Invalid email format
+      subject: "Invalid Email Test",
+      body: "This should fail due to invalid email format.",
+      status: EmailStatus.PENDING,
+      eventName: "Event",
+      ticketId: 123,
+      seatNumbers: ["A1", "A2"]
+    };
+    invalidEmail.body = generateBookingConfirmationEmail(invalidEmail);
+
+    await expect(sendEmail(invalidEmail)).rejects.toThrow(/Email send failed/);
+  });
+
+  it("should throw an error when email is missing a recipient address", async () => {
+    const noRecipientEmail: Email = {
+      id: 2,
+      email: "",
+      subject: "No Recipient Test",
+      body: "This should fail because the recipient is missing.",
+      status: EmailStatus.PENDING,
+      eventName: "Event",
+      ticketId: 123,
+      seatNumbers: ["A1", "A2"]
+    };
+    noRecipientEmail.body = generateBookingConfirmationEmail(noRecipientEmail);
+
+    await expect(sendEmail(noRecipientEmail)).rejects.toThrow(/Email send failed/);
+    expect(noRecipientEmail.status).toBe(EmailStatus.FAILED);
   });
 });
