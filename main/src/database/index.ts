@@ -5,6 +5,7 @@ import { Ticket } from './entity/Ticket';
 import { Event } from './entity/Event';
 import { Client } from 'pg';
 import { Seat } from './entity/Seat';
+import { UserRole } from '../enum/userRole.enum';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -51,12 +52,42 @@ const createDbIfNotExists = async () => {
   }
 };
 
+const seedDatabase = async () => {
+  const userRepository = AppDataSource.getRepository(User);
+
+  const existingUsers = await userRepository.count();
+  if (existingUsers === 0) {
+    console.log('Seeding database with initial users...');
+
+
+    const users = [
+      {
+        email: 'test1234@test.com',
+        password: '$2a$10$Rr44lLYBDaEBgRbPp/7OAuB8C2WYYVQ3GBe.GKAZXyEFBUqWydGCK',
+        role: UserRole.CUSTOMER,
+      },
+      {
+        email: 'test123@test.com',
+        password: '$2a$10$ylybB/NXleTVn.4laUQAQeXhc2J8/yUny/i.zBWvclLzFpEbvoHZu',
+        role: UserRole.ADMIN,
+      },
+    ];
+
+    await userRepository.save(users);
+    console.log('Initial users seeded successfully');
+  } else {
+    console.log('Users already exist in the database; skipping seeding');
+  }
+};
+
 export const initializeDatabase = async () => {
   try {
     await createDbIfNotExists();
 
     await AppDataSource.initialize();
     console.log('Database connection initialized successfully');
+
+    await seedDatabase();
   } catch (error) {
     console.error('Database initialization failed:', error);
     process.exit(1);

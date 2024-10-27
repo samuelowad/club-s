@@ -1,42 +1,51 @@
-version: '3.8'
-services:
-  main-service:
-    build: ./main-service
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./uploads:/usr/src/app/uploads  # Shared volume for uploads
-      - ./proto:/usr/src/app/proto      # Shared proto files
-    environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=images_db
-    depends_on:
-      - postgres
-      - image-scanner
+version: "3.8"
 
-  image-scanner:
-    build: mailer
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    container_name: "rabbitmq"
     ports:
-      - "50051:50051"
-    volumes:
-      - ./uploads:/usr/src/app/uploads  # Shared volume for uploads
-      - ./proto:/usr/src/app/proto      # Shared proto files
-    depends_on:
-      - postgres
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
 
   postgres:
-    image: postgres:13
+    image: "postgres:14-alpine"
+    container_name: "postgres"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: images_db
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "appdb"
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
+  main:
+    build:
+      context: ./main
+      dockerfile: Dockerfile
+    container_name: "main"
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+      DATABASE_URL: "postgres://postgres:password@postgres:5432/appdb"
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  mailer:
+    build:
+      context: ./mailer
+      dockerfile: Dockerfile
+    container_name: "mailer"
+    environment:
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+      DATABASE_URL: "postgres://postgres:password@postgres:5432/appdb"
+    depends_on:
+      - rabbitmq
+      - postgres
 
 volumes:
-  pgdata:
+  postgres_data:

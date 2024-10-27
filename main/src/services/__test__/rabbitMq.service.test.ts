@@ -1,7 +1,6 @@
-import RabbitMQService from '../rabbitMq.service'; // Adjust the import path
+import RabbitMQService from '../rabbitMq.service';
 import amqp, { Channel } from 'amqplib';
 
-// Mock the amqplib module
 jest.mock('amqplib');
 
 describe('RabbitMQService', () => {
@@ -9,7 +8,6 @@ describe('RabbitMQService', () => {
   let mockConnection: jest.Mocked<amqp.Connection>;
 
   beforeEach(() => {
-    // Create mock channel and connection
     mockChannel = {
       assertQueue: jest.fn(),
       sendToQueue: jest.fn(),
@@ -25,7 +23,7 @@ describe('RabbitMQService', () => {
   });
 
   afterEach(async () => {
-    await RabbitMQService.close(); // Ensure to close any open connections after each test
+    await RabbitMQService.close();
   });
 
   it('should initialize RabbitMQ connection and channel', async () => {
@@ -42,7 +40,7 @@ describe('RabbitMQService', () => {
   });
 
   it('should send a message to the queue', async () => {
-    await RabbitMQService.init(); // Initialize RabbitMQ first
+    await RabbitMQService.init();
     const message = { email: 'test@example.com', eventId: '123', ticketId: '456', seatNumbers: [1, 2] };
 
     await RabbitMQService.fanOut(message);

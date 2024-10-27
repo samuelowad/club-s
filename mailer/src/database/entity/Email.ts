@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
-import { EmailStatus } from '../enum';
+import { EmailStatus } from '../../enum';
 
 @Entity()
 export class Email {
