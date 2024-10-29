@@ -10,6 +10,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
+    command: >
+      sh -c "rabbitmq-plugins enable rabbitmq_prometheus && rabbitmq-server"
 
   postgres_main:
     image: "postgres:14-alpine"
@@ -106,6 +108,9 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+    volumes:
+      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+
 
 volumes:
   postgres_main_data:

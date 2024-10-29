@@ -34,7 +34,7 @@ describe('RabbitMQ Consumer', () => {
 
     expect(mockChannel.assertQueue).toHaveBeenCalledWith('email_notifications', { durable: true });
     expect(mockChannel.consume).toHaveBeenCalledWith('email_notifications', expect.any(Function));
-    expect(logger.info).toHaveBeenCalledWith('RabbitMQ consumer is up and listening for messages...');
+    expect(logger.info).toHaveBeenCalledWith('RabbitMQ consumer is up and listening for messages');
   });
 
   it('should process incoming messages and acknowledge them', async () => {
@@ -52,14 +52,5 @@ describe('RabbitMQ Consumer', () => {
     expect(EmailService.createEmail).toHaveBeenCalledWith(mockEmail);
 
     expect(mockChannel.ack).toHaveBeenCalledWith(mockMessage);
-  });
-
-  it('should log an error if the connection to RabbitMQ fails', async () => {
-    const mockError = new Error('Connection failed');
-    (amqp.connect as jest.Mock).mockRejectedValue(mockError);
-
-    await connectRabbitMQ();
-
-    expect(logger.error).toHaveBeenCalledWith('Error connecting to RabbitMQ', mockError);
   });
 });

@@ -3,33 +3,43 @@ import EmailService from '../services/email.service';
 import { EmailData } from '../interface';
 import { logger } from '../utils/logger';
 import config from '../config';
-import { generateBookingConfirmationEmail } from '../utils/email.util';
 
 const CHANNEL_NAME = 'email_notifications';
+const RETRY_INTERVAL = 5000;
+const MAX_RETRIES = 10;
 
 async function connectRabbitMQ() {
-  try {
-    const connection = await amqp.connect({
-      hostname: config.RABBITMQ_HOST,
-      port: Number(config.RABBITMQ_PORT) ,
-      username: config.RABBITMQ_USER ,
-      password: config.RABBITMQ_PASSWORD ,
-    });
-    const channel = await connection.createChannel();
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const connection = await amqp.connect({
+        hostname: config.RABBITMQ_HOST,
+        port: Number(config.RABBITMQ_PORT),
+        username: config.RABBITMQ_USER,
+        password: config.RABBITMQ_PASSWORD,
+      });
 
-    await channel.assertQueue(CHANNEL_NAME, { durable: true });
+      const channel = await connection.createChannel();
+      await channel.assertQueue(CHANNEL_NAME, { durable: true });
 
-    await channel.consume(CHANNEL_NAME, async (msg) => {
-      if (msg !== null) {
-        const emailData: EmailData = JSON.parse(msg.content.toString());
-        await EmailService.createEmail(emailData);
-        channel.ack(msg);
+      await channel.consume(CHANNEL_NAME, async (msg) => {
+        if (msg) {
+          const emailData:EmailData = JSON.parse(msg.content.toString());
+          await EmailService.createEmail(emailData);
+          channel.ack(msg);
+        }
+      });
+
+      logger.info('RabbitMQ consumer is up and listening for messages');
+      break;
+
+    } catch (error) {
+      logger.error(`RabbitMQ connection attempt ${attempt} failed:`, error);
+      if (attempt === MAX_RETRIES) {
+        logger.error('Max retries reached. Exiting process');
+        process.exit(1);
       }
-    });
-
-    logger.info('RabbitMQ consumer is up and listening for messages...');
-  } catch (error) {
-    logger.error('Error connecting to RabbitMQ',  error);
+      await new Promise((resolve) => setTimeout(resolve, RETRY_INTERVAL));
+    }
   }
 }
 

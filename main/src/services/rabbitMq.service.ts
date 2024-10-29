@@ -2,25 +2,38 @@ import amqp, { Channel } from 'amqplib';
 import config from '../config';
 
 const CHANNEL_NAME = 'email_notifications';
+const RETRY_INTERVAL = 5000;
+const MAX_RETRIES = 10;
+
 class RabbitMQService {
   private channel: Channel | null = null;
   private connection: amqp.Connection | null = null;
 
   public async init() {
-    try {
-      this.connection = await amqp.connect({
-        hostname: config.RABBITMQ_HOST ,
-        port: Number(config.RABBITMQ_PORT) ,
-        username: config.RABBITMQ_USER ,
-        password: config.RABBITMQ_PASSWORD,
-      });
-      this.channel = await this.connection.createChannel();
-      console.log('RabbitMQ connected');
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        this.connection = await amqp.connect({
+          hostname: config.RABBITMQ_HOST,
+          port: Number(config.RABBITMQ_PORT),
+          username: config.RABBITMQ_USER,
+          password: config.RABBITMQ_PASSWORD,
+        });
 
-      await this.channel.assertQueue(CHANNEL_NAME, { durable: true });
-    } catch (error) {
-      console.error('Error connecting to RabbitMQ:', error);
-      throw error;
+        this.channel = await this.connection.createChannel();
+        console.log('RabbitMQ connected');
+        await this.channel.assertQueue(CHANNEL_NAME, { durable: true });
+        break;
+
+      } catch (error) {
+        console.log(`RabbitMQ connection attempt ${attempt} failed:`, error);
+
+        if (attempt === MAX_RETRIES) {
+          console.error('Max retries reached. Exiting process');
+          throw error;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, RETRY_INTERVAL));
+      }
     }
   }
 
