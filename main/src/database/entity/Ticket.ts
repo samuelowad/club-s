@@ -3,6 +3,7 @@ import { User } from './User';
 import { Event } from './Event';
 import { TicketStatusEnum } from '../../enum/ticketStatus.enum';
 import { Seat } from './Seat';
+import {Club} from "./Club";
 
 @Entity()
 export class Ticket {
@@ -17,6 +18,9 @@ export class Ticket {
 
   @OneToMany(() => Seat, (seat) => seat.ticket, { cascade: true })
   seats: Seat[];
+
+  // @ManyToOne(()=> Club, (club) => club.ticket)
+  // club: Club;
 
   @Column()
   quantity: number;

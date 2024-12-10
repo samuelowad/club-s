@@ -6,6 +6,7 @@ import { Event } from './entity/Event';
 import { Client } from 'pg';
 import { Seat } from './entity/Seat';
 import { UserRole } from '../enum/userRole.enum';
+import {Club} from "./entity/Club";
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -14,8 +15,9 @@ export const AppDataSource = new DataSource({
   username: config.POSTGRES_USER,
   password: config.POSTGRES_PASSWORD,
   database: config.POSTGRES_DB,
-  synchronize: true,
-  entities: [User, Event, Ticket, Seat],
+  synchronize: false,
+  entities: [User, Event, Ticket, Seat, Club],
+  migrations: ['src/database/migrations/*.ts'],
 });
 
 const createDbIfNotExists = async () => {
@@ -53,31 +55,8 @@ const createDbIfNotExists = async () => {
 };
 
 const seedDatabase = async () => {
-  const userRepository = AppDataSource.getRepository(User);
-
-  const existingUsers = await userRepository.count();
-  if (existingUsers === 0) {
-    console.log('Seeding database with initial users...');
-
-
-    const users = [
-      {
-        email: 'test1234@test.com',
-        password: '$2a$10$Rr44lLYBDaEBgRbPp/7OAuB8C2WYYVQ3GBe.GKAZXyEFBUqWydGCK',
-        role: UserRole.CUSTOMER,
-      },
-      {
-        email: 'test123@test.com',
-        password: '$2a$10$ylybB/NXleTVn.4laUQAQeXhc2J8/yUny/i.zBWvclLzFpEbvoHZu',
-        role: UserRole.ADMIN,
-      },
-    ];
-
-    await userRepository.save(users);
-    console.log('Initial users seeded successfully');
-  } else {
-    console.log('Users already exist in the database; skipping seeding');
-  }
+    await createClubs();
+  await createUsers();
 };
 
 export const initializeDatabase = async () => {
@@ -101,3 +80,56 @@ process.on('SIGINT', async () => {
   }
   process.exit(0);
 });
+
+const createUsers = async () => {
+  const userRepository = AppDataSource.getRepository(User);
+
+  const existingUsers = await userRepository.count();
+  if (existingUsers === 0) {
+    console.log('Seeding database with initial users...');
+
+
+    const users = [
+      {
+        email: 'test1234@test.com',
+        password: '$2a$10$Rr44lLYBDaEBgRbPp/7OAuB8C2WYYVQ3GBe.GKAZXyEFBUqWydGCK',
+        role: UserRole.CUSTOMER,
+        clubId: 1,
+      },
+      {
+        email: 'test123@test.com',
+        password: '$2a$10$ylybB/NXleTVn.4laUQAQeXhc2J8/yUny/i.zBWvclLzFpEbvoHZu',
+        role: UserRole.ADMIN,
+        clubId: 2,
+      },
+    ];
+
+    await userRepository.save(users);
+    console.log('Initial users seeded successfully');
+  } else {
+    console.log('Users already exist in the database; skipping seeding');
+  }
+}
+
+const createClubs = async () => {
+    const clubRepository = AppDataSource.getRepository(Club);
+
+    const existingClubs = await clubRepository.count();
+    if (existingClubs === 0) {
+        console.log('Seeding database with initial clubs...');
+
+        const clubs = [
+        {
+            name: 'club1',
+        },
+        {
+            name: 'club2',
+        },
+        ];
+
+        await clubRepository.save(clubs);
+        console.log('Initial clubs seeded successfully');
+    } else {
+        console.log('Clubs already exist in the database; skipping seeding');
+    }
+}

@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, ManyToOne} from 'typeorm';
 import { UserRole } from '../../enum/userRole.enum';
 import { Ticket } from './Ticket';
+import {Club} from "./Club";
 
 @Entity()
 export class User {
@@ -18,4 +19,7 @@ export class User {
 
   @OneToMany(() => Ticket, (ticket) => ticket.user)
   tickets: Ticket[];
+
+  @ManyToOne(()=> Club, (club) => club.user)
+    club: Club;
 }

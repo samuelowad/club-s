@@ -8,7 +8,7 @@ import { Event } from '../database/entity/Event';
 
 export const createEvent = async (req: ExtendedRequest, res: Response,) => {
   try {
-    const { name, description, date, venue, availableTickets } = req.body;
+    const { name, description, date, venue, availableTickets, clubId } = req.body;
     const event: EventInterface = {
       name,
       description,
@@ -28,6 +28,9 @@ export const createEvent = async (req: ExtendedRequest, res: Response,) => {
 }
 
 export const getEvents = async (req: Request, res: Response) => {
+  let { clubId } = req.query;
+  if (!clubId) return errorResponse(res, 'Club ID is required', 400);
+
   try {
     const events = await EventService.getEvents();
     return successResponse(res, events, 'Events retrieved');
@@ -39,6 +42,8 @@ export const getEvents = async (req: Request, res: Response) => {
 export const getEvent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { clubId } = req.query;
+    if(!clubId) return errorResponse(res, 'Club ID is required', 400);
     const event = await EventService.getById(+id, 'seats');
     if (!event) return errorResponse(res, 'Event not found', 404);
     return successResponse(res, event, 'Event retrieved');

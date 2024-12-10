@@ -7,6 +7,7 @@ import routes from './routes/index.routes';
 import { errorHandler } from './routes/middleware';
 import { logger } from './utils/logger';
 import RabbitMQService  from './services/rabbitMq.service';
+import { setClubContext } from './middleware/tenantContext.middleware';
 
 export const app = express();
 let server: http.Server;
@@ -14,6 +15,8 @@ let server: http.Server;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+// @ts-ignore
+app.use(setClubContext);
 
 app.use(routes);
 app.use(logger);
@@ -74,7 +77,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const startServer = async () => {
   try {
     await initializeDatabase();
-    await RabbitMQService.init();
+    // await RabbitMQService.init();
 
     const PORT = process.env.PORT || 3000;
     server = app.listen(PORT, () => {

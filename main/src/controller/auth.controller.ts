@@ -13,7 +13,7 @@ import JwtUtil from '../utils/jwt.util';
 
 export const createAccount = async (req: Request, res: Response) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role, clubId } = req.body;
 
         const userExists = await UserService.getUserByEmail(email);
         if (userExists) return conflictResponse(res, 'User already exists');
@@ -34,7 +34,8 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, clubId } = req.body;
+        console.log(email, password, clubId);
         const user = await UserService.getUserByEmail(email);
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return validationErrorResponse(res, 'Invalid email or password');

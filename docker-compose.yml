@@ -25,17 +25,17 @@ services:
     volumes:
       - postgres_main_data:/var/lib/postgresql/data
 
-  postgres_mailer:
-    image: "postgres:14-alpine"
-    container_name: "postgres_mailer"
-    environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "appdb_mailer"
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres_mailer_data:/var/lib/postgresql/data
+#  postgres_mailer:
+#    image: "postgres:14-alpine"
+#    container_name: "postgres_mailer"
+#    environment:
+#      POSTGRES_USER: "postgres"
+#      POSTGRES_PASSWORD: "password"
+#      POSTGRES_DB: "appdb_mailer"
+#    ports:
+#      - "5434:5432"
+#    volumes:
+#      - postgres_mailer_data:/var/lib/postgresql/data
 
   main:
     build:
@@ -64,52 +64,52 @@ services:
     ports:
       - "3000:3000"
 
-  mailer:
-    build:
-      context: ./mailer
-      dockerfile: Dockerfile
-    container_name: "mailer"
-    environment:
-      POSTGRES_HOST: "postgres_mailer"
-      POSTGRES_PORT: "5432"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "appdb_mailer"
-      SERVER_PORT: "3001"
-      RABBITMQ_HOST: "rabbitmq"
-      RABBITMQ_PORT: "5672"
-      RABBITMQ_USER: "guest"
-      RABBITMQ_PASSWORD: "guest"
-      MAIL_SERVICE: "gmail"
-      GMAIL_USER: "your_gmail_user"
-      GMAIL_PASS: "your_gmail_password"
-    depends_on:
-      - rabbitmq
-      - postgres_mailer
-    volumes:
-      - ./mailer:/usr/src/app
-    ports:
-        - "3001:3001"
-
-  prometheus:
-    image: prom/prometheus
-    container_name: "prometheus"
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-
-  grafana:
-    image: grafana/grafana
-    container_name: "grafana"
-    ports:
-      - "8181:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    depends_on:
-      - prometheus
-    volumes:
-      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+#  mailer:
+#    build:
+#      context: ./mailer
+#      dockerfile: Dockerfile
+#    container_name: "mailer"
+#    environment:
+#      POSTGRES_HOST: "postgres_mailer"
+#      POSTGRES_PORT: "5432"
+#      POSTGRES_USER: "postgres"
+#      POSTGRES_PASSWORD: "password"
+#      POSTGRES_DB: "appdb_mailer"
+#      SERVER_PORT: "3001"
+#      RABBITMQ_HOST: "rabbitmq"
+#      RABBITMQ_PORT: "5672"
+#      RABBITMQ_USER: "guest"
+#      RABBITMQ_PASSWORD: "guest"
+#      MAIL_SERVICE: "gmail"
+#      GMAIL_USER: "your_gmail_user"
+#      GMAIL_PASS: "your_gmail_password"
+#    depends_on:
+#      - rabbitmq
+#      - postgres_mailer
+#    volumes:
+#      - ./mailer:/usr/src/app
+#    ports:
+#        - "3001:3001"
+#
+#  prometheus:
+#    image: prom/prometheus
+#    container_name: "prometheus"
+#    ports:
+#      - "9090:9090"
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#
+#  grafana:
+#    image: grafana/grafana
+#    container_name: "grafana"
+#    ports:
+#      - "8181:3000"
+#    environment:
+#      - GF_SECURITY_ADMIN_PASSWORD=admin
+#    depends_on:
+#      - prometheus
+#    volumes:
+#      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
 
 
 volumes:

@@ -9,7 +9,12 @@
     "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/app.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "prod": "npm run build && npm run start"
+    "prod": "npm run build && npm run start",
+    "migration:create": "npx typeorm migration:create ./src/database/migrations/$npm_config_name",
+    "migration:generate": "npx typeorm migration:generate -d src/database/index.ts -n",
+    "migration:run": "node --loader ts-node/esm -r ts-node/register ./node_modules/typeorm/cli.js migration:run -d src/database/index.ts",
+    "miration:run-ts": "npx typeorm migration:run -d src/database/index.ts",
+    "migration:revert": "node --loader ts-node/esm -r ts-node/register ./node_modules/typeorm/cli.js migration:revert -d src/database/index.ts"
   },
   "keywords": [],
   "author": "",

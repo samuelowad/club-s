@@ -1,0 +1,56 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class EnableRls1733846316880 implements MigrationInterface {
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        // Create the RLS function
+        await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION current_club_id()
+      RETURNS INTEGER AS $$
+      BEGIN
+          RETURN current_setting('app.current_club_id', TRUE)::INTEGER;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+        // Enable RLS on tables with club_id
+        const tables = [
+            'event',
+            'ticket',
+            'seat',
+            'user'
+        ];
+
+        for (const table of tables) {
+            // Enable RLS
+            await queryRunner.query(`ALTER TABLE "${table}" ENABLE ROW LEVEL SECURITY;`);
+
+            // Create policy
+            await queryRunner.query(`
+        CREATE POLICY ${table}_tenant_isolation ON "${table}"
+        USING (club_id = current_club_id());
+      `);
+        }
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        const tables = [
+            'event',
+            'ticket',
+            'seat',
+            'user'
+        ];
+
+        for (const table of tables) {
+            // Drop policy
+            await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_isolation ON "${table}";`);
+
+            // Disable RLS
+            await queryRunner.query(`ALTER TABLE "${table}" DISABLE ROW LEVEL SECURITY;`);
+        }
+
+        // Drop the function
+        await queryRunner.query('DROP FUNCTION IF EXISTS current_club_id();');
+    }
+
+}

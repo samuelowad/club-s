@@ -20,7 +20,7 @@ class TicketService {
           seatNumbers: seats.map(seat => seat.seatNumber),
         };
 
-        await RabbitMQService.fanOut(message);
+        // await RabbitMQService.fanOut(message);
         return newTicket;
       } catch (error) {
         console.error('Error during ticket creation:', error);
