@@ -59,6 +59,9 @@ class UserService {
       );
       console.log('Raw query result with explicit WHERE:', result);
 
+      const withrepo = await this.userRepository.findOne( {where: { email}});
+      console.log('With repo:', withrepo);
+
       return result[0];
     } finally {
       await queryRunner.release();

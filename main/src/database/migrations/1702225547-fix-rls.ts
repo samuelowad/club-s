@@ -3,14 +3,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class FixRls1702225547000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const tables = ['event', 'user'];
-    
+
     for (const table of tables) {
       // First remove all existing policies
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_isolation ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_select ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_insert ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_update ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_delete ON "${table}";`);
+      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_policy ON "${table}";`);
 
       // Disable RLS temporarily
       await queryRunner.query(`ALTER TABLE "${table}" DISABLE ROW LEVEL SECURITY;`);
@@ -31,53 +27,22 @@ export class FixRls1702225547000 implements MigrationInterface {
       console.log(`Enabling RLS for table ${table}`);
       await queryRunner.query(`ALTER TABLE "${table}" ENABLE ROW LEVEL SECURITY;`);
 
-      // Create separate policies for different operations
-      console.log(`Creating policies for table ${table}`);
-      
-      // SELECT policy
+      // Create a single restrictive policy
+      console.log(`Creating restrictive policy for table ${table}`);
       await queryRunner.query(`
-        CREATE POLICY ${table}_tenant_select ON "${table}"
-        FOR SELECT
+        CREATE POLICY ${table}_tenant_policy ON "${table}"
+        FOR ALL
         TO public
-        USING ("clubId"::TEXT = current_club_id());
-      `);
-
-      // INSERT policy
-      await queryRunner.query(`
-        CREATE POLICY ${table}_tenant_insert ON "${table}"
-        FOR INSERT
-        TO public
-        WITH CHECK ("clubId"::TEXT = current_club_id());
-      `);
-
-      // UPDATE policy
-      await queryRunner.query(`
-        CREATE POLICY ${table}_tenant_update ON "${table}"
-        FOR UPDATE
-        TO public
-        USING ("clubId"::TEXT = current_club_id())
-        WITH CHECK ("clubId"::TEXT = current_club_id());
-      `);
-
-      // DELETE policy
-      await queryRunner.query(`
-        CREATE POLICY ${table}_tenant_delete ON "${table}"
-        FOR DELETE
-        TO public
-        USING ("clubId"::TEXT = current_club_id());
+        USING (
+          "clubId"::TEXT = current_club_id()
+        )
+        WITH CHECK (
+          "clubId"::TEXT = current_club_id()
+        );
       `);
 
       // Force RLS
       await queryRunner.query(`ALTER TABLE "${table}" FORCE ROW LEVEL SECURITY;`);
-
-      // Verify the policies
-      const policies = await queryRunner.query(`
-        SELECT schemaname, tablename, policyname, cmd, qual, with_check 
-        FROM pg_policies 
-        WHERE tablename = '${table}'
-        ORDER BY policyname;
-      `);
-      console.log(`Detailed policies for ${table}:`, policies);
     }
   }
 
@@ -85,13 +50,9 @@ export class FixRls1702225547000 implements MigrationInterface {
     const tables = ['event', 'user'];
 
     for (const table of tables) {
-      // First remove all policies
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_isolation ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_select ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_insert ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_update ON "${table}";`);
-      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_delete ON "${table}";`);
-      
+      // Remove the restrictive policy
+      await queryRunner.query(`DROP POLICY IF EXISTS ${table}_tenant_policy ON "${table}";`);
+
       // Disable RLS
       await queryRunner.query(`ALTER TABLE "${table}" DISABLE ROW LEVEL SECURITY;`);
     }

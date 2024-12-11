@@ -16,11 +16,8 @@ export const setClubContext = async (req: Request, res: Response, next: NextFunc
     
     // Set the RLS policy context
     console.log('Setting club context to', clubId);
-    await queryRunner.query(`SET SESSION app.current_club_id TO '${clubId}'`);
-    
-    // Verify the setting was applied
-    const result = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
-    console.log('Verified club context:', result);
+    await queryRunner.query(`SET ROLE normal_user;`);
+    await queryRunner.query(`SET SESSION app.current_club_id TO ${+clubId}`);
 
     // Commit transaction
     await queryRunner.commitTransaction();

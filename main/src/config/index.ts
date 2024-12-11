@@ -6,6 +6,7 @@ export default {
   POSTGRES_PORT: process.env.POSTGRES_PORT || '5433',
   POSTGRES_USER: process.env.POSTGRES_USER || 'postgres',
   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD || 'password',
+  POSTGRESS_NON_ROOT_USER: process.env.POSTGRESS_NONE_ROOT_USER || 'normal_user',
   POSTGRES_DB: process.env.POSTGRES_DB || 'appdb_main',
   SERVER_PORT: process.env.SERVER_PORT || 3000,
   RABBITMQ_HOST: process.env.RABBITMQ_HOST || 'localhost',

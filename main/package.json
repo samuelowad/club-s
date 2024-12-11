@@ -20,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@avallone-io/rls": "^2.0.4",
     "amqplib": "^0.10.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

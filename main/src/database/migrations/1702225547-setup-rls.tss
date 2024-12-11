@@ -1,0 +1,39 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+import { RLS } from '@avallone-io/rls';
+
+export class SetupRls1702225547000 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    const rls = new RLS();
+
+    // Enable RLS on tables
+    await rls.enableRLS(queryRunner, ['user', 'event']);
+
+    // Create RLS policies for each table
+    await rls.createPolicy(queryRunner, {
+      name: 'user_tenant_policy',
+      table: 'user',
+      using: `"clubId"::text = current_setting('app.current_club_id', true)`,
+      check: `"clubId"::text = current_setting('app.current_club_id', true)`,
+      command: 'ALL'
+    });
+
+    await rls.createPolicy(queryRunner, {
+      name: 'event_tenant_policy',
+      table: 'event',
+      using: `"clubId"::text = current_setting('app.current_club_id', true)`,
+      check: `"clubId"::text = current_setting('app.current_club_id', true)`,
+      command: 'ALL'
+    });
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    const rls = new RLS();
+
+    // Drop policies
+    await rls.dropPolicy(queryRunner, 'user_tenant_policy', 'user');
+    await rls.dropPolicy(queryRunner, 'event_tenant_policy', 'event');
+
+    // Disable RLS
+    await rls.disableRLS(queryRunner, ['user', 'event']);
+  }
+}
