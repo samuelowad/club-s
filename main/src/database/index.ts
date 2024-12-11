@@ -77,9 +77,9 @@ const createNonRootUser = async () => {
       
       // Create non-root user
       await client.query(`
-        CREATE ROLE ${config.POSTGRESS_NON_ROOT_USER} WITH LOGIN PASSWORD $1;
+        CREATE ROLE ${config.POSTGRESS_NON_ROOT_USER} WITH LOGIN PASSWORD '${config.POSTGRES_PASSWORD}';
         ALTER ROLE ${config.POSTGRESS_NON_ROOT_USER} NOSUPERUSER;
-      `, [config.POSTGRES_PASSWORD]);
+      `);
 
       // Grant necessary privileges
       await client.query(`
