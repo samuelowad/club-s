@@ -1,9 +1,10 @@
 import { User } from '../database/entity/User';
 import { AppDataSource } from '../database';
 import { UserInterface } from '../interface';
-import { Repository } from 'typeorm';
+import {QueryRunner, Repository} from 'typeorm';
 import {PostgresDriver} from "typeorm/driver/postgres/PostgresDriver";
 import config from "../config";
+import {withRLSContext} from "../database/util/withRLSContext";
 
 class UserService {
   private userRepository: Repository<User>;
@@ -91,7 +92,7 @@ class UserService {
       await this.userRepository.query(`SET ROLE ${config.POSTGRESS_NON_ROOT_USER};`);
       await this.userRepository.query(`SET app.current_club_id TO ${+clubId}`);
       const waitTime = (num ?? 1) * 60 * 1000;
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
+
 
       const context1 = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
       console.log('Current club context repo2:', context1);
@@ -100,6 +101,13 @@ class UserService {
         console.log('With repo2:', withRepo2);
 
       console.log('With repo:', withRepo);
+
+      const withRep3 = await withRLSContext(clubId, async (queryRunner: QueryRunner) => {
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        return await queryRunner.manager.findOne(User, { where: { email } });
+      });
+
+      console.log('With repo3:', withRep3);
 
       // Commit transaction
       await queryRunner.commitTransaction();

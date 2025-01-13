@@ -36,10 +36,8 @@ export const setClubContext = async (req: Request, res: Response, next: NextFunc
     // console.log(`Verified club context for uer:${req.body?.num}`, resuust, typeof resuust[0]);
 
 
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
+    // await new Promise((resolve) => setTimeout(resolve, waitTime));
 
-    // Commit transaction
-    await queryRunner.commitTransaction();
     
     next();
   } catch (error) {
@@ -49,6 +47,9 @@ export const setClubContext = async (req: Request, res: Response, next: NextFunc
     next(error);
   } finally {
     // Release query runner
+
+    // Commit transaction
+    await queryRunner.commitTransaction();
     await queryRunner.release();
   }
 };
