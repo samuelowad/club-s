@@ -7,6 +7,7 @@ import { Client } from 'pg';
 import { Seat } from './entity/Seat';
 import { UserRole } from '../enum/userRole.enum';
 import {Club} from "./entity/Club";
+import { GlobalSubscriber } from './subscribers/GlobalSubscriber';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -17,6 +18,7 @@ export const AppDataSource = new DataSource({
   database: config.POSTGRES_DB,
   synchronize: true,
   entities: [User, Event, Ticket, Seat, Club],
+  // subscribers: [GlobalSubscriber],
   migrations: ['src/database/migrations/*.ts'],
 });
 

@@ -25,7 +25,7 @@ class UserService {
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  public async getUserByEmail(email: string, clubId: string) {
+  public async getUserByEmail(email: string, clubId: string, num?:number) {
     console.log(`Getting user by email: ${email} ${clubId}`);
     const queryRunner = AppDataSource.createQueryRunner();
     try {
@@ -79,7 +79,7 @@ class UserService {
 
       // Set session variables for RLS
       await queryRunner.query(`SET ROLE ${config.POSTGRESS_NON_ROOT_USER};`);
-      await queryRunner.query(`SET SESSION app.current_club_id TO ${+clubId}`);
+      await queryRunner.query(`SET LOCAL app.current_club_id TO ${+clubId}`);
 
       // Verify RLS context is set
       const context = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
@@ -89,7 +89,9 @@ class UserService {
       const withRepo = await queryRunner.manager.findOne(User, { where: { email } });
 
       await this.userRepository.query(`SET ROLE ${config.POSTGRESS_NON_ROOT_USER};`);
-      await this.userRepository.query(`SET SESSION app.current_club_id TO ${+clubId}`);
+      await this.userRepository.query(`SET app.current_club_id TO ${+clubId}`);
+      const waitTime = (num ?? 1) * 60 * 1000;
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
 
       const context1 = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
       console.log('Current club context repo2:', context1);

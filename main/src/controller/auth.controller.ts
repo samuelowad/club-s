@@ -34,11 +34,11 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, num } = req.body;
         const clubId = req.header('x-club-id');
         if(!clubId) return validationErrorResponse(res, 'Club ID is required in header (x-club-id)');
         console.log(email, password, clubId);
-        const user = await UserService.getUserByEmail(email, clubId);
+        const user = await UserService.getUserByEmail(email, clubId, num);
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return validationErrorResponse(res, 'Invalid email or password');
         }
