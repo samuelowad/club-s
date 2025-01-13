@@ -2,6 +2,8 @@ import { User } from '../database/entity/User';
 import { AppDataSource } from '../database';
 import { UserInterface } from '../interface';
 import { Repository } from 'typeorm';
+import {PostgresDriver} from "typeorm/driver/postgres/PostgresDriver";
+import config from "../config";
 
 class UserService {
   private userRepository: Repository<User>;
@@ -23,46 +25,84 @@ class UserService {
     return await this.userRepository.findOne({ where: { id } });
   }
 
-  public async getUserByEmail(email: string) {
+  public async getUserByEmail(email: string, clubId: string) {
+    console.log(`Getting user by email: ${email} ${clubId}`);
     const queryRunner = AppDataSource.createQueryRunner();
     try {
+      // await queryRunner.connect();
+      //
+      // (AppDataSource.driver as PostgresDriver).master.on("acquire", (client: any) => {
+      //   client.query(`SET ROLE ${config.POSTGRESS_NON_ROOT_USER};`);
+      //   client.query(`SET SESSION app.current_club_id TO ${+clubId}`);
+      // });
+      // // Check RLS status
+      // const rlsStatus = await queryRunner.query(`
+      //   SELECT relname, relrowsecurity
+      //   FROM pg_class
+      //   WHERE relname = 'user';
+      // `);
+      // console.log('RLS Status:', rlsStatus);
+      //
+      // // Check policies
+      // const policies = await queryRunner.query(`
+      //   SELECT * FROM pg_policies WHERE tablename = 'user';
+      // `);
+      // console.log('Policies:', policies);
+      //
+      // const context = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
+      // console.log('Current club context:', context);
+      //
+      // // Use raw query to see exactly what's happening
+      // const re = await queryRunner.query(
+      //     `SELECT * FROM "user" WHERE email = $1`,
+      //     [email]
+      // );
+      // console.log('Raw query result:', re);
+      // console.log(`of ${email}`);
+      // // this.userRepository.manager
+      //
+      // // Try explicit WHERE clause to test
+      // const result = await queryRunner.query(
+      //   `SELECT * FROM "user" WHERE email = $1 AND "clubId"::TEXT = current_setting('app.current_club_id', true)`,
+      //   [email]
+      // );
+      // console.log('Raw query result with explicit WHERE:', result);
+      //
+      //
+      // const withrepo = await this.userRepository.findOne( {where: { email}});
+      // console.log('With repo:', withrepo);
+      //
+      // return result[0];
+
       await queryRunner.connect();
+      await queryRunner.startTransaction();
 
-      // Check RLS status
-      const rlsStatus = await queryRunner.query(`
-        SELECT relname, relrowsecurity 
-        FROM pg_class 
-        WHERE relname = 'user';
-      `);
-      console.log('RLS Status:', rlsStatus);
+      // Set session variables for RLS
+      await queryRunner.query(`SET ROLE ${config.POSTGRESS_NON_ROOT_USER};`);
+      await queryRunner.query(`SET SESSION app.current_club_id TO ${+clubId}`);
 
-      // Check policies
-      const policies = await queryRunner.query(`
-        SELECT * FROM pg_policies WHERE tablename = 'user';
-      `);
-      console.log('Policies:', policies);
-
+      // Verify RLS context is set
       const context = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
       console.log('Current club context:', context);
 
-      // Use raw query to see exactly what's happening
-      const re = await queryRunner.query(
-          `SELECT * FROM "user" WHERE email = $1`,
-          [email]
-      );
-      console.log('Raw query result:', re);
+      // Perform repository operation within the QueryRunner context
+      const withRepo = await queryRunner.manager.findOne(User, { where: { email } });
 
-      // Try explicit WHERE clause to test
-      const result = await queryRunner.query(
-        `SELECT * FROM "user" WHERE email = $1 AND "clubId"::TEXT = current_setting('app.current_club_id', true)`,
-        [email]
-      );
-      console.log('Raw query result with explicit WHERE:', result);
+      await this.userRepository.query(`SET ROLE ${config.POSTGRESS_NON_ROOT_USER};`);
+      await this.userRepository.query(`SET SESSION app.current_club_id TO ${+clubId}`);
 
-      const withrepo = await this.userRepository.findOne( {where: { email}});
-      console.log('With repo:', withrepo);
+      const context1 = await queryRunner.query(`SELECT current_setting('app.current_club_id', true) as current_club_id`);
+      console.log('Current club context repo2:', context1);
 
-      return result[0];
+      const withRepo2 = await this.userRepository.findOne({ where: { email } });
+        console.log('With repo2:', withRepo2);
+
+      console.log('With repo:', withRepo);
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+
+      return withRepo;
     } finally {
       await queryRunner.release();
     }

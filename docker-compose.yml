@@ -18,7 +18,7 @@ services:
     container_name: "postgres_main"
     environment:
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
+      POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "appdb_main"
     ports:
       - "5433:5432"
@@ -46,7 +46,7 @@ services:
       POSTGRES_HOST: "postgres_main"
       POSTGRES_PORT: "5432"
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
+      POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "appdb_main"
       SERVER_PORT: "3000"
       RABBITMQ_HOST: "rabbitmq"

@@ -15,7 +15,7 @@ export const createAccount = async (req: Request, res: Response) => {
     try {
         const { email, password, role, clubId } = req.body;
 
-        const userExists = await UserService.getUserByEmail(email);
+        const userExists = await UserService.getUserByEmail(email, '1');
         if (userExists) return conflictResponse(res, 'User already exists');
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -34,9 +34,11 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const { email, password, clubId } = req.body;
+        const { email, password } = req.body;
+        const clubId = req.header('x-club-id');
+        if(!clubId) return validationErrorResponse(res, 'Club ID is required in header (x-club-id)');
         console.log(email, password, clubId);
-        const user = await UserService.getUserByEmail(email);
+        const user = await UserService.getUserByEmail(email, clubId);
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return validationErrorResponse(res, 'Invalid email or password');
         }

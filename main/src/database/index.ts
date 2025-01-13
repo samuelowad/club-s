@@ -12,13 +12,26 @@ export const AppDataSource = new DataSource({
   type: 'postgres',
   host: config.POSTGRES_HOST,
   port: Number(config.POSTGRES_PORT),
-  username: config.POSTGRES_USER, // Using non-root user for normal operations
+  username: config.POSTGRESS_NON_ROOT_USER, // Using non-root user for normal operations
   password: config.POSTGRES_PASSWORD,
   database: config.POSTGRES_DB,
-  synchronize: false,
+  synchronize: true,
   entities: [User, Event, Ticket, Seat, Club],
   migrations: ['src/database/migrations/*.ts'],
 });
+
+const MainDataSource = new DataSource({
+    type: 'postgres',
+    host: config.POSTGRES_HOST,
+    port: Number(config.POSTGRES_PORT),
+    username: config.POSTGRES_USER, // Using non-root user for normal operations
+    password: config.POSTGRES_PASSWORD,
+    database: config.POSTGRES_DB,
+    synchronize: false,
+    entities: [User, Event, Ticket, Seat, Club],
+    migrations: ['src/database/migrations/*.ts'],
+});
+
 
 const createDbIfNotExists = async () => {
   const client = new Client({
@@ -28,6 +41,14 @@ const createDbIfNotExists = async () => {
     password: config.POSTGRES_PASSWORD,
     database: 'postgres',
   });
+
+  console.log({
+    host: config.POSTGRES_HOST,
+    port: Number(config.POSTGRES_PORT),
+    user: config.POSTGRES_USER, // Using superuser for database creation
+    password: config.POSTGRES_PASSWORD,
+    database: 'postgres',
+  })
 
   try {
     await client.connect();
@@ -148,6 +169,7 @@ const seedDatabase = async () => {
 
 export const initializeDatabase = async () => {
   try {
+    await MainDataSource.initialize();
     await createDbIfNotExists();
     await createNonRootUser();
     await AppDataSource.initialize();
@@ -168,7 +190,7 @@ process.on('SIGINT', async () => {
 });
 
 const createUsers = async () => {
-  const userRepository = AppDataSource.getRepository(User);
+  const userRepository = MainDataSource.getRepository(User);
 
   const existingUsers = await userRepository.count();
   if (existingUsers === 0) {
@@ -198,7 +220,7 @@ const createUsers = async () => {
 }
 
 const createClubs = async () => {
-    const clubRepository = AppDataSource.getRepository(Club);
+    const clubRepository = MainDataSource.getRepository(Club);
 
     const existingClubs = await clubRepository.count();
     if (existingClubs === 0) {
