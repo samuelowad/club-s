@@ -112,7 +112,7 @@ class UserService {
       // Commit transaction
       await queryRunner.commitTransaction();
 
-      return withRepo;
+      return withRep3;
     } finally {
       await queryRunner.release();
     }

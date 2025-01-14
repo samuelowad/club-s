@@ -15,6 +15,7 @@ export const createEvent = async (req: ExtendedRequest, res: Response,) => {
       date,
       venue,
       availableTickets,
+        clubId
     }
     const eventExists = await EventService.getEventByName(name);
     if (eventExists) return errorResponse(res, 'Event already exists', 409);
@@ -32,7 +33,7 @@ export const getEvents = async (req: Request, res: Response) => {
   if (!clubId) return errorResponse(res, 'Club ID is required', 400);
 
   try {
-    const events = await EventService.getEvents();
+    const events = await EventService.getEvents(clubId.toString());
     return successResponse(res, events, 'Events retrieved');
   } catch (error:any) {
     return errorResponse(res, error.message, 500);

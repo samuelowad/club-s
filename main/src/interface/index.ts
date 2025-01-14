@@ -14,6 +14,7 @@ export interface EventInterface {
     date: string;
     venue: string;
     availableTickets: number;
+    clubId: number;
 }
 
 export interface UserInterface {
